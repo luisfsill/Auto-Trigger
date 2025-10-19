@@ -1,14 +1,14 @@
 {
   "grupos": [
-    { "value": "grupo1", "displayName": "Grupo 1" },
-    { "value": "grupo2", "displayName": "Grupo 2" },
-    { "value": "grupo3", "displayName": "Grupo 3" },
-    { "value": "grupo4", "displayName": "Grupo 4" },
-    { "value": "grupo5", "displayName": "Grupo 5" },
-    { "value": "grupo6", "displayName": "Grupo 6" },
-    { "value": "grupo7", "displayName": "Grupo 7" },
-    { "value": "grupo8", "displayName": "Grupo 8" },
-    { "value": "grupo9", "displayName": "Grupo 9" },
-    { "value": "grupo10", "displayName": "Grupo 10" }
+    { "value": "Grupo 1", "displayName": "Grupo 1" },
+    { "value": "Grupo 2", "displayName": "Grupo 2" },
+    { "value": "Grupo 3", "displayName": "Grupo 3" },
+    { "value": "Grupo 4", "displayName": "Grupo 4" },
+    { "value": "Grupo 5", "displayName": "Grupo 5" },
+    { "value": "Grupo 6", "displayName": "Grupo 6" },
+    { "value": "Grupo 7", "displayName": "Grupo 7" },
+    { "value": "Grupo 8", "displayName": "Grupo 8" },
+    { "value": "Grupo 9", "displayName": "Grupo 9" },
+    { "value": "Grupo 10", "displayName": "Grupo 10" }
   ]
 }

@@ -1,5 +1,5 @@
 # Ignorar o arquivo de fluxo do n8n
-teste.json
+fluxo.json
 
 # Ignorar arquivos de ambiente local
 .env

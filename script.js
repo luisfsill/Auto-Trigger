@@ -160,20 +160,12 @@ function showFeedback(message, type) {
     const feedbackContainer = document.getElementById('feedbackContainer');
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
-    alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    alertDiv.innerHTML = `${message.replace(/\n/g, '<br>')}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
     feedbackContainer.innerHTML = '';
     feedbackContainer.appendChild(alertDiv);
-    setTimeout(() => { alertDiv.remove(); }, 5000);
+    setTimeout(() => { alertDiv.remove(); }, 30000);
 }
 
-function updateProgress(percent) {
-    const progressBar = document.getElementById('progressBar');
-    const progressContainer = document.getElementById('progressContainer');
-    progressContainer.style.display = 'block';
-    progressBar.style.width = percent + '%';
-    progressBar.setAttribute('aria-valuenow', percent);
-    progressBar.textContent = percent + '%';
-}
 
 async function sendMessage() {
     if (isProcessing) return;
@@ -194,10 +186,8 @@ async function sendMessage() {
     isProcessing = true;
     sendButton.disabled = true;
     sendButton.textContent = 'ENVIANDO...';
-    updateProgress(0);
 
     try {
-        updateProgress(25);
         const payload = {
             auth: app.data.auth, // Adiciona as credenciais salvas
             message: message,
@@ -205,7 +195,6 @@ async function sendMessage() {
             hasImage: !!selectedImage,
             image: selectedImage || null
         };
-        updateProgress(50);
 
         const response = await fetch('/.netlify/functions/sendMessage', {
             method: 'POST',
@@ -213,27 +202,21 @@ async function sendMessage() {
             body: JSON.stringify(payload)
         });
 
-        updateProgress(75);
         const result = await response.text();
 
         if (response.ok) {
-            updateProgress(100);
             showFeedback(result || 'Mensagens enviadas com sucesso!', 'success');
             setTimeout(() => {
                 document.getElementById('messageText').value = '';
                 document.getElementById('groupSelect').value = '';
                 removeImage();
-                updateProgress(0);
-                document.getElementById('progressContainer').style.display = 'none';
-            }, 3000);
+            }, 30000);
         } else {
             throw new Error(result || 'Erro no servidor ao enviar mensagem');
         }
     } catch (error) {
         console.error('Erro:', error);
         showFeedback(error.message || 'Erro ao enviar mensagens.', 'danger');
-        updateProgress(0);
-        document.getElementById('progressContainer').style.display = 'none';
     } finally {
         isProcessing = false;
         sendButton.disabled = false;

@@ -31,7 +31,7 @@ exports.handler = async function(event) {
     }
 
     // Prepara o payload para o webhook da n8n (sem as credenciais)
-    const n8nPayload = { message, group, hasImage, image };
+    const n8nPayload = { message, group, hasImage, image, timestamp: new Date().toISOString() };
 
     // Faz a requisição para o webhook da n8n
     const response = await fetch(n8nWebhookUrl, {
