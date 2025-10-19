@@ -33,19 +33,17 @@ exports.handler = async function(event) {
     // Prepara o payload para o webhook da n8n (sem as credenciais)
     const n8nPayload = { message, group, hasImage, image, timestamp: new Date().toISOString() };
 
-    // Faz a requisição para o webhook da n8n
-    const response = await fetch(n8nWebhookUrl, {
+    // Faz a requisição para o webhook da n8n (não esperamos a resposta completa)
+    fetch(n8nWebhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(n8nPayload),
-    });
+    }).catch(error => console.error('Erro ao chamar webhook n8n em background:', error)); // Log errors, mas não bloqueia
 
-    const responseData = await response.text();
-
-    // Retorna a mesma resposta (sucesso ou erro) que a n8n deu
+    // Retorna uma resposta imediata para o cliente
     return {
-      statusCode: response.status,
-      body: responseData,
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Disparo do fluxo n8n iniciado com sucesso em segundo plano.' }),
     };
 
   } catch (error) {
