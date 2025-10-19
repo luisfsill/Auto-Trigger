@@ -1,0 +1,8 @@
+{
+  "name": "auto-trigger-netlify-proxy",
+  "version": "1.0.0",
+  "description": "Dependências para a Netlify Function",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Trigger</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container" style="display: none;">
+        <h1>Auto Trigger</h1>
+        
+        <!-- Container da Mensagem -->
+        <div class="card">
+            <div class="card-body">
+                <label for="messageText" class="form-label">Mensagem</label>
+                <textarea 
+                    class="form-control" 
+                    id="messageText" 
+                    placeholder="Digite a mensagem que será enviada..."
+                    required
+                ></textarea>
+            </div>
+        </div>
+        
+        <!-- Container da Imagem -->
+        <div class="card">
+            <div class="card-body">
+                <label for="imageFile" class="form-label">Imagem (Opcional)</label>
+                <input 
+                    type="file" 
+                    class="form-control" 
+                    id="imageFile" 
+                    accept="image/*"
+                    onchange="previewImage(event)"
+                >
+                <small class="text-muted d-block mt-2">
+                    Formatos aceitos: JPG, PNG, GIF (máx. 5MB)
+                </small>
+                
+                <!-- Preview da Imagem -->
+                <div id="imagePreview" style="display: none; margin-top: 1rem;">
+                    <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 2px solid #e2e8f0;">
+                    <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeImage()">
+                        Remover Imagem
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Container de Seleção de Grupo -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label for="groupSelect" class="form-label mb-0">Selecionar Grupo</label>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editGroupsModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-top: -2px; margin-right: 4px;"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zM13.75 4.31 9.21 8.854a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l4.54-4.54-2-2z"></path><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path></svg>
+                        Editar Nomes
+                    </button>
+                </div>
+                <select class="form-select" id="groupSelect" required>
+                    <option value="">Escolha um grupo...</option>
+                </select>
+                <small class="text-muted d-block mt-2">
+                    Cada grupo corresponde a uma aba da planilha Google Sheets
+                </small>
+            </div>
+        </div>
+        
+        <!-- Container do Botão -->
+        <div class="card">
+            <div class="card-body">
+                <button type="button" class="btn btn-primary" id="sendButton" onclick="sendMessage()">
+                    ENVIAR
+                </button>
+            </div>
+        </div>
+        
+        <!-- Container da Barra de Progresso -->
+        <div class="card" id="progressContainer">
+            <div class="card-body">
+                <label class="form-label">Progresso</label>
+                <div class="progress">
+                    <div 
+                        class="progress-bar" 
+                        role="progressbar" 
+                        id="progressBar"
+                        style="width: 0%"
+                        aria-valuenow="0" 
+                        aria-valuemin="0" 
+                        aria-valuemax="100"
+                    >
+                        0%
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mensagens de feedback -->
+        <div id="feedbackContainer"></div>
+    </div>
+
+    <!-- Modal de Login -->
+    <div class="modal fade" id="loginModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginModalLabel">Autenticação Necessária</h5>
+          </div>
+          <div class="modal-body">
+            <p>Por favor, insira suas credenciais para acessar.</p>
+            <div id="loginError" class="alert alert-danger" style="display: none;"></div>
+            <form id="loginForm">
+              <div class="mb-3">
+                <label for="username" class="form-label">Usuário</label>
+                <input type="text" class="form-control" id="username" required>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Senha</label>
+                <input type="password" class="form-control" id="password" required>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">Entrar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para Editar Nomes dos Grupos -->
+    <div class="modal fade" id="editGroupsModal" tabindex="-1" aria-labelledby="editGroupsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editGroupsModalLabel">Editar Nomes dos Grupos</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="editGroupsModalBody">
+            <!-- O formulário com os nomes dos grupos será preenchido por JavaScript -->
+            <p>Carregando...</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="saveGroupNames">Salvar Alterações</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="./script.js" defer></script>
+</body>
+</html>

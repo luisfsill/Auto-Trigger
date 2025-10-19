@@ -1,0 +1,14 @@
+{
+  "grupos": [
+    { "value": "grupo1", "displayName": "Grupo 1" },
+    { "value": "grupo2", "displayName": "Grupo 2" },
+    { "value": "grupo3", "displayName": "Grupo 3" },
+    { "value": "grupo4", "displayName": "Grupo 4" },
+    { "value": "grupo5", "displayName": "Grupo 5" },
+    { "value": "grupo6", "displayName": "Grupo 6" },
+    { "value": "grupo7", "displayName": "Grupo 7" },
+    { "value": "grupo8", "displayName": "Grupo 8" },
+    { "value": "grupo9", "displayName": "Grupo 9" },
+    { "value": "grupo10", "displayName": "Grupo 10" }
+  ]
+}

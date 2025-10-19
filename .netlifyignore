@@ -1,0 +1,11 @@
+# Ignorar o arquivo de fluxo do n8n
+teste.json
+
+# Ignorar arquivos de ambiente local
+.env
+
+# Ignorar dependências do Node
+node_modules
+
+# Local Netlify folder
+.netlify
