@@ -226,3 +226,14 @@ async function sendMessage() {
 
 // Inicia o fluxo de autenticação quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => app.init());
+
+// Registra o Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(registration => {
+      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    }, err => {
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  });
+}
