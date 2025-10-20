@@ -241,7 +241,14 @@ async function sendMessage() {
             body: JSON.stringify(payload)
         });
 
-        const result = await response.text();
+        let result;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const jsonResponse = await response.json();
+            result = jsonResponse.message || JSON.stringify(jsonResponse);
+        } else {
+            result = await response.text();
+        }
 
         if (response.ok) {
             showFeedback(result || 'Mensagens enviadas com sucesso!', 'success');
