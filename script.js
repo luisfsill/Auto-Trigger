@@ -175,14 +175,34 @@ function removeImage() {
     document.getElementById('previewImg').src = '';
 }
 
+let feedbackModal; // Variável global para a instância do modal
+
+document.addEventListener('DOMContentLoaded', () => {
+    feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+    app.init();
+});
+
 function showFeedback(message, type) {
-    const feedbackContainer = document.getElementById('feedbackContainer');
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
-    alertDiv.innerHTML = `${message.replace(/\n/g, '<br>')}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-    feedbackContainer.innerHTML = '';
-    feedbackContainer.appendChild(alertDiv);
-    setTimeout(() => { alertDiv.remove(); }, 30000);
+    const feedbackModalLabel = document.getElementById('feedbackModalLabel');
+    const feedbackModalBody = document.getElementById('feedbackModalBody');
+    const modalHeader = document.getElementById('feedbackModal').querySelector('.modal-header');
+
+    // Define o título e a cor do cabeçalho do modal com base no tipo de feedback
+    if (type === 'success') {
+        feedbackModalLabel.textContent = 'Sucesso!';
+        modalHeader.classList.remove('bg-danger');
+        modalHeader.classList.add('bg-success', 'text-white');
+    } else if (type === 'danger') {
+        feedbackModalLabel.textContent = 'Erro!';
+        modalHeader.classList.remove('bg-success');
+        modalHeader.classList.add('bg-danger', 'text-white');
+    } else {
+        feedbackModalLabel.textContent = 'Aviso';
+        modalHeader.classList.remove('bg-success', 'bg-danger');
+    }
+
+    feedbackModalBody.innerHTML = message.replace(/\n/g, '<br>');
+    feedbackModal.show();
 }
 
 
@@ -225,11 +245,9 @@ async function sendMessage() {
 
         if (response.ok) {
             showFeedback(result || 'Mensagens enviadas com sucesso!', 'success');
-            setTimeout(() => {
-                document.getElementById('messageText').value = '';
-                document.getElementById('groupSelect').value = '';
-                removeImage();
-            }, 30000);
+            document.getElementById('messageText').value = '';
+            document.getElementById('groupSelect').value = '';
+            removeImage();
         } else {
             throw new Error(result || 'Erro no servidor ao enviar mensagem');
         }
@@ -243,8 +261,7 @@ async function sendMessage() {
     }
 }
 
-// Inicia o fluxo de autenticação quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => app.init());
+
 
 // Registra o Service Worker
 if ('serviceWorker' in navigator) {
