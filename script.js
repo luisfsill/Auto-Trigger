@@ -13,9 +13,25 @@ const app = {
     
     // Inicia o fluxo de autenticação
     init() {
-        this.loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-        this.loginModal.show();
-        this.addLoginListener();
+        this.addLoginListener(); // Adiciona o listener de qualquer forma
+        const savedAuth = localStorage.getItem('autoTriggerAuth');
+
+        if (savedAuth) {
+            try {
+                const decodedAuth = atob(savedAuth);
+                const [username, password] = decodedAuth.split(':');
+                this.data.auth = { username, password };
+                this.startApp(); // Pula o modal e inicia a app
+            } catch (e) {
+                console.error("Falha ao decodificar credenciais, limpando.", e);
+                localStorage.removeItem('autoTriggerAuth');
+                this.loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                this.loginModal.show();
+            }
+        } else {
+            this.loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+            this.loginModal.show();
+        }
     },
 
     // Adiciona o listener para o formulário de login
@@ -34,6 +50,9 @@ const app = {
 
                 if (response.ok) {
                     this.data.auth = { username, password }; // Salva as credenciais na memória
+                    const encodedAuth = btoa(`${username}:${password}`);
+                    localStorage.setItem('autoTriggerAuth', encodedAuth);
+
                     this.loginModal.hide();
                     this.startApp(); // Inicia a aplicação principal
                 } else {

@@ -223,3 +223,36 @@ textarea.form-control {
 .btn-close {
     filter: brightness(0.6);
 }
+
+/* Estilos para o layout responsivo da mensagem e imagem */
+.message-image-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.message-wrapper {
+    flex: 2; /* Faz a mensagem ocupar mais espaço */
+    min-width: 250px;
+}
+
+#imagePreview {
+    flex: 1; /* Faz a imagem ocupar menos espaço */
+    min-width: 150px;
+    max-height: 180px; /* Altura máxima para a imagem */
+    align-self: center; /* Centraliza a imagem no container flex */
+}
+
+#messageText {
+    height: 90px; /* Altura fixa para alinhar com a imagem */
+}
+
+#previewImg {
+    max-height: 150px; /* Altura da imagem um pouco menor que o container */
+}
+
+label[for="messageText"],
+label[for="imageFile"] {
+    padding-left: 0.5rem; /* Pequeno preenchimento para alinhar com o dropdown */
+}

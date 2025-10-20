@@ -13,43 +13,26 @@
     <div class="container" style="display: none;">
         <h1>Auto Trigger</h1>
         
-        <!-- Container da Mensagem -->
-        <div class="card">
-            <div class="card-body">
-                <label for="messageText" class="form-label">Mensagem</label>
-                <textarea 
-                    class="form-control" 
-                    id="messageText" 
-                    placeholder="Digite a mensagem que será enviada..."
-                    required
-                ></textarea>
-            </div>
-        </div>
-        
-        <!-- Container da Imagem -->
-        <div class="card">
-            <div class="card-body">
-                <label for="imageFile" class="form-label">Imagem (Opcional)</label>
-                <input 
-                    type="file" 
-                    class="form-control" 
-                    id="imageFile" 
-                    accept="image/*"
-                    onchange="previewImage(event)"
-                >
-                <small class="text-muted d-block mt-2">
-                    Formatos aceitos: JPG, PNG, GIF (máx. 5MB)
-                </small>
-                
+            <!-- Container para Mensagem e Imagem -->
+            <div class="message-image-container mb-3">
+                <!-- Área da Mensagem -->
+                <div class="message-wrapper">
+                    <label for="messageText" class="form-label">Mensagem</label>
+                    <textarea class="form-control" id="messageText" rows="5"></textarea>
+                </div>
+
                 <!-- Preview da Imagem -->
-                <div id="imagePreview" style="display: none; margin-top: 1rem;">
-                    <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 2px solid #e2e8f0;">
-                    <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeImage()">
-                        Remover Imagem
-                    </button>
+                <div id="imagePreview" style="display: none;">
+                    <img id="previewImg" src="" alt="Preview da Imagem" class="img-fluid rounded">
+                    <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeImage()">Remover Imagem</button>
                 </div>
             </div>
-        </div>
+
+            <!-- Input de Imagem -->
+            <div class="mb-3">
+                <label for="imageFile" class="form-label">Anexar Imagem (opcional, max 5MB)</label>
+                <input class="form-control" type="file" id="imageFile" accept="image/*" onchange="previewImage(event)">
+            </div>
         
         <!-- Container de Seleção de Grupo -->
         <div class="card">
