@@ -225,33 +225,55 @@ textarea.form-control {
     filter: brightness(0.6);
 }
 
-/* Estilos para o layout responsivo da mensagem e imagem */
-.message-image-container {
+/* Estilos para o upload de imagem */
+.image-upload-container {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 1rem;
-    align-items: flex-start;
 }
 
-.message-wrapper {
-    flex: 2; /* Faz a mensagem ocupar mais espaço */
-    min-width: 250px;
+.image-input-wrapper {
+    flex: 1;
 }
 
 #imagePreview {
-    flex: 1; /* Faz a imagem ocupar menos espaço */
-    min-width: 150px;
-    max-height: 180px; /* Altura máxima para a imagem */
-    align-self: center; /* Centraliza a imagem no container flex */
-}
-
-#messageText {
-    height: 90px; /* Altura fixa para alinhar com a imagem */
+    position: relative;
+    width: 120px; /* Largura fixa */
+    height: 90px; /* Altura fixa para alinhar com a altura do campo de mensagem */
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e2e8f0;
 }
 
 #previewImg {
-    max-height: 150px; /* Altura da imagem um pouco menor que o container */
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Garante que a imagem cubra o espaço sem distorcer */
 }
+
+.remove-image-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.remove-image-btn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
 
 label[for="messageText"],
 label[for="imageFile"] {

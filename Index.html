@@ -13,25 +13,22 @@
     <div class="container" style="display: none;">
         <h1>Auto Trigger</h1>
         
-            <!-- Container para Mensagem e Imagem -->
-            <div class="message-image-container mb-3">
-                <!-- Área da Mensagem -->
-                <div class="message-wrapper">
-                    <label for="messageText" class="form-label">Mensagem</label>
-                    <textarea class="form-control" id="messageText" rows="5"></textarea>
-                </div>
-
-                <!-- Preview da Imagem -->
-                <div id="imagePreview" style="display: none;">
-                    <img id="previewImg" src="" alt="Preview da Imagem" class="img-fluid rounded">
-                    <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeImage()">Remover Imagem</button>
-                </div>
+            <!-- Container para Mensagem -->
+            <div class="mb-3">
+                <label for="messageText" class="form-label">Mensagem</label>
+                <textarea class="form-control" id="messageText" rows="5"></textarea>
             </div>
 
-            <!-- Input de Imagem -->
-            <div class="mb-3">
-                <label for="imageFile" class="form-label">Anexar Imagem (opcional, max 5MB)</label>
-                <input class="form-control" type="file" id="imageFile" accept="image/*" onchange="previewImage(event)">
+            <!-- Input de Imagem e Preview -->
+            <div class="image-upload-container mb-3">
+                <div class="image-input-wrapper">
+                    <label for="imageFile" class="form-label">Anexar Imagem (opcional, max 5MB)</label>
+                    <input class="form-control" type="file" id="imageFile" accept="image/*" onchange="previewImage(event)">
+                </div>
+                <div id="imagePreview" style="display: none;">
+                    <img id="previewImg" src="" alt="Preview da Imagem">
+                    <button type="button" class="remove-image-btn" onclick="removeImage()">&times;</button>
+                </div>
             </div>
         
         <!-- Container de Seleção de Grupo -->
