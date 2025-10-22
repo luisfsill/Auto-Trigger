@@ -4,21 +4,21 @@ const fetch = require('node-fetch');
 exports.handler = async function(event) {
   // Garante que a requisição seja um POST
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return { statusCode: 405, headers: { 'Content-Type': 'text/plain; charset=utf-8' }, body: 'Method Not Allowed' };
   }
 
       const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
   
       // Verifica se a variável de ambiente está configurada
       if (!n8nWebhookUrl) {
-        return { statusCode: 500, body: 'Erro de configuração: A URL do webhook (N8N_WEBHOOK_URL) não foi definida.' };
+        return { statusCode: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' }, body: 'Erro de configuração: A URL do webhook (N8N_WEBHOOK_URL) não foi definida.' };
       }  
   try {
     const { AUTH_USERNAME, AUTH_PASSWORD } = process.env;
 
     // Verifica se as credenciais de autenticação estão configuradas no servidor
     if (!AUTH_USERNAME || !AUTH_PASSWORD) {
-      return { statusCode: 500, body: 'Credenciais de autenticação não configuradas no servidor.' };
+      return { statusCode: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' }, body: 'Credenciais de autenticação não configuradas no servidor.' };
     }
 
     // Extrai os dados e as credenciais do corpo da requisição
@@ -29,9 +29,10 @@ exports.handler = async function(event) {
     // Valida se o grupo foi fornecido
     if (!group || typeof group !== 'string' || group.trim() === '') {
       console.error('Erro: grupo inválido no payload:', group);
-      return { 
-        statusCode: 400, 
-        body: JSON.stringify({ message: 'O grupo é obrigatório e deve ser um texto válido' })
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        body: 'O grupo é obrigatório e deve ser um texto válido'
       };
     }
 
@@ -40,13 +41,14 @@ exports.handler = async function(event) {
       console.error('Erro: formato do grupo inválido:', group);
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: 'Formato do grupo inválido. Deve ser "Grupo X" onde X é um número.' })
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        body: 'Formato do grupo inválido. Deve ser "Grupo X" onde X é um número.'
       };
     }
 
     // Valida as credenciais recebidas
     if (!auth || auth.username !== AUTH_USERNAME || auth.password !== AUTH_PASSWORD) {
-      return { statusCode: 401, body: 'Autenticação falhou.' };
+      return { statusCode: 401, headers: { 'Content-Type': 'text/plain; charset=utf-8' }, body: 'Autenticação falhou.' };
     }
 
     // Prepara o payload para o webhook da n8n (sem as credenciais)
@@ -73,20 +75,23 @@ exports.handler = async function(event) {
       console.error('Erro ao chamar webhook n8n:', n8nResponse.status, n8nErrorText);
       return {
         statusCode: n8nResponse.status || 500,
-        body: JSON.stringify({ message: `Erro ao enviar mensagem para n8n: ${n8nErrorText}` }),
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        body: `Erro ao enviar mensagem para n8n: ${n8nErrorText}`,
       };
     }
 
-    // Retorna uma resposta imediata para o cliente
+    // Retorna uma resposta imediata para o cliente (texto simples)
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Disparo do fluxo n8n iniciado com sucesso em segundo plano.' }),
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      body: 'Disparo do fluxo n8n iniciado com sucesso em segundo plano.',
     };
 
   } catch (error) {
     console.error('Erro na função proxy:', error);
     return {
       statusCode: 500,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       body: 'Erro interno ao processar a requisição.',
     };
   }

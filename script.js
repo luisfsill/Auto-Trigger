@@ -258,8 +258,9 @@ async function sendMessage() {
 
         if (response.ok) {
             showFeedback(result || 'Mensagens enviadas com sucesso!', 'success');
-            document.getElementById('messageText').value = '';
-            document.getElementById('groupSelect').value = '';
+            // Mantém a mensagem no campo de texto após o envio (não limpar)
+            // Se quiser limpar o grupo também, descomente a linha abaixo
+            // document.getElementById('groupSelect').value = '';
             removeImage();
         } else {
             throw new Error(result || 'Erro no servidor ao enviar mensagem');
