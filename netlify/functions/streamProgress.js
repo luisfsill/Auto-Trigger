@@ -5,37 +5,65 @@ const progressCache = {};
 // Função para tratar POST (receber atualizações do n8n)
 const handlePost = async (event) => {
   try {
-    const body = typeof event.body === 'string' 
-      ? JSON.parse(event.body) 
-      : event.body;
+    let body;
+    
+    // Valida e parseia o corpo
+    if (!event.body) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Body vazio' }),
+      };
+    }
+
+    try {
+      body = typeof event.body === 'string' 
+        ? JSON.parse(event.body) 
+        : event.body;
+    } catch (parseError) {
+      console.error('Erro ao parsear body:', parseError);
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Body inválido - não é JSON válido' }),
+      };
+    }
 
     const { executionId, status, percentage, message, totalContatos } = body;
 
     if (!executionId) {
       return {
         statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Missing executionId' }),
       };
     }
 
+    // Valida e normaliza percentage
+    const validPercentage = Math.min(Math.max(parseInt(percentage) || 0, 0), 100);
+
     // Armazena o progresso no cache
     progressCache[executionId] = {
-      status,
-      percentage: Math.min(Math.max(percentage, 0), 100), // Garante que está entre 0-100
-      message,
-      totalContatos,
+      status: status || 'processing',
+      percentage: validPercentage,
+      message: message || '',
+      totalContatos: totalContatos || 0,
       timestamp: new Date().toISOString(),
     };
+
+    console.log(`Progresso armazenado para ${executionId}:`, progressCache[executionId]);
 
     // Limpa o cache após 30 minutos (progresso completado)
     if (status === 'completed') {
       setTimeout(() => {
         delete progressCache[executionId];
+        console.log(`Cache limpo para ${executionId}`);
       }, 30 * 60 * 1000);
     }
 
     return {
       statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         success: true, 
         message: 'Progresso atualizado',
@@ -44,91 +72,84 @@ const handlePost = async (event) => {
     };
   } catch (error) {
     console.error('Erro ao processar POST:', error);
+    console.error('Stack trace:', error.stack);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        error: error.message,
+        details: 'Erro ao processar atualização de progresso'
+      }),
     };
   }
 };
 
 // Função para tratar GET (stream de SSE)
 const handleGet = async (event) => {
-  const executionId = event.queryStringParameters?.executionId;
+  try {
+    const executionId = event.queryStringParameters?.executionId;
 
-  if (!executionId) {
+    if (!executionId) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Missing executionId parameter' }),
+      };
+    }
+
+    console.log(`Iniciando stream SSE para executionId: ${executionId}`);
+
+    // Verifica se há progresso armazenado
+    const initialProgress = progressCache[executionId];
+    
+    // Cria resposta SSE que será retornada ao cliente
+    let response = '';
+    let eventId = 0;
+
+    const sendEvent = (data) => {
+      return `id: ${eventId++}\ndata: ${JSON.stringify(data)}\n\n`;
+    };
+
+    // Envia evento inicial de conexão
+    response += sendEvent({
+      status: 'connected',
+      message: 'Aguardando atualizações...',
+      executionId,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Se há progresso anterior, envia imediatamente
+    if (initialProgress) {
+      console.log(`Progresso anterior encontrado:`, initialProgress);
+      response += sendEvent(initialProgress);
+    }
+
+    // Nota: Netlify Functions têm limitações de timeout (~26 segundos)
+    // Para streaming real, considere usar WebSockets ou long-polling com múltiplas requisições
+    
     return {
-      statusCode: 400,
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: response,
+      isBase64Encoded: false,
+    };
+  } catch (error) {
+    console.error('Erro ao processar GET:', error);
+    console.error('Stack trace:', error.stack);
+    return {
+      statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Missing executionId parameter' }),
+      body: JSON.stringify({ 
+        error: error.message,
+        details: 'Erro ao iniciar stream SSE'
+      }),
     };
   }
-
-  // Obtém o contexto de entrega para manter a conexão aberta
-  const isBase64Encoded = false;
-  let eventId = 0;
-
-  // Função para enviar eventos SSE
-  const sendEvent = (data) => {
-    return `id: ${eventId++}\ndata: ${JSON.stringify(data)}\n\n`;
-  };
-
-  // Cria uma resposta com streaming
-  let response = '';
-
-  // Envia evento inicial de conexão
-  response += sendEvent({
-    status: 'connected',
-    message: 'Aguardando atualizações...',
-    executionId,
-    timestamp: new Date().toISOString(),
-  });
-
-  // Recupera progresso armazenado se existir
-  if (progressCache[executionId]) {
-    response += sendEvent(progressCache[executionId]);
-  }
-
-  // Implementação de polling: simula long-polling para manter a conexão
-  // Na prática, use WebSockets ou tecnologias mais avançadas
-  let pollCount = 0;
-  const maxPolls = 300; // ~5 minutos com 1s de intervalo
-
-  const pollInterval = setInterval(() => {
-    pollCount++;
-
-    // Verifica se há progresso atualizado
-    const progressData = progressCache[executionId];
-    if (progressData) {
-      response += sendEvent(progressData);
-
-      // Se completado, fecha a conexão
-      if (progressData.status === 'completed') {
-        clearInterval(pollInterval);
-        response += 'event: complete\ndata: {}\n\n';
-      }
-    } else if (pollCount >= maxPolls) {
-      // Timeout: fecha por segurança
-      clearInterval(pollInterval);
-      response += sendEvent({
-        status: 'timeout',
-        message: 'Conexão expirada após 5 minutos',
-        percentage: 0,
-      });
-    }
-  }, 1000);
-
-  // Retorna streaming SSE
-  return {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-    },
-    body: response,
-    isBase64Encoded,
-  };
 };
 
 exports.handler = async (event, context) => {
@@ -136,24 +157,43 @@ exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   try {
+    console.log(`Requisição ${event.httpMethod} recebida:`, {
+      path: event.path,
+      queryStringParameters: event.queryStringParameters,
+    });
+
     // Roteia para o handler apropriado baseado no método HTTP
     if (event.httpMethod === 'POST') {
       return await handlePost(event);
     } else if (event.httpMethod === 'GET') {
       return await handleGet(event);
+    } else if (event.httpMethod === 'OPTIONS') {
+      // Suporta CORS preflight
+      return {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      };
     } else {
       return {
         statusCode: 405,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Method Not Allowed' }),
       };
     }
   } catch (error) {
     console.error('Erro geral:', error);
+    console.error('Stack trace:', error.stack);
     return {
       statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         error: 'Internal Server Error',
-        message: error.message 
+        message: error.message,
+        timestamp: new Date().toISOString()
       }),
     };
   }

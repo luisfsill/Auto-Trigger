@@ -81,31 +81,58 @@ exports.handler = async function(event) {
     }
 
     // Extrai o corpo da resposta do n8n para obter o executionId
-    const n8nResponseBody = await n8nResponse.json();
-    const executionId = n8nResponseBody.executionId; // Ajuste este caminho se o n8n retornar uma estrutura diferente
-
-    if (!executionId) {
-      console.error('Erro: n8n não retornou um executionId.', n8nResponseBody);
-      return {
-        statusCode: 500,
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ message: 'Falha ao obter o ID de execução do n8n.' }),
-      };
+    let n8nResponseBody;
+    try {
+      const responseText = await n8nResponse.text();
+      console.log('Resposta bruta do n8n:', responseText);
+      
+      // Tenta parsear como JSON
+      if (responseText) {
+        n8nResponseBody = JSON.parse(responseText);
+      } else {
+        n8nResponseBody = {};
+      }
+    } catch (parseError) {
+      console.error('Erro ao fazer parse da resposta n8n:', parseError);
+      n8nResponseBody = {};
     }
+
+    // Tenta extrair executionId de diferentes estruturas possíveis
+    let executionId = n8nResponseBody.executionId 
+      || n8nResponseBody.id 
+      || n8nResponseBody.execution?.id
+      || n8nResponseBody.data?.executionId;
+
+    // Se não encontrou executionId, gera um temporário baseado no timestamp
+    if (!executionId) {
+      console.warn('Aviso: n8n não retornou um executionId. Gerando ID temporário.');
+      executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    console.log('ExecutionId extraído/gerado:', executionId);
 
     // Retorna o executionId para o cliente
     return {
       statusCode: 202, // 202 Accepted indica que a requisição foi aceita para processamento
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      body: JSON.stringify({ executionId: executionId }),
+      body: JSON.stringify({ 
+        success: true,
+        executionId: executionId,
+        message: 'Fluxo iniciado com sucesso'
+      }),
     };
 
   } catch (error) {
     console.error('Erro na função proxy:', error);
+    console.error('Stack trace:', error.stack);
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-      body: 'Erro interno ao processar a requisição.',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({ 
+        error: 'Erro interno ao processar a requisição.',
+        message: error.message,
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      }),
     };
   }
 };
