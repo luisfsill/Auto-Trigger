@@ -75,16 +75,29 @@ exports.handler = async function(event) {
       console.error('Erro ao chamar webhook n8n:', n8nResponse.status, n8nErrorText);
       return {
         statusCode: n8nResponse.status || 500,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-        body: `Erro ao enviar mensagem para n8n: ${n8nErrorText}`,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ message: `Erro ao iniciar fluxo no n8n: ${n8nErrorText}` }),
       };
     }
 
-    // Retorna uma resposta imediata para o cliente (texto simples)
+    // Extrai o corpo da resposta do n8n para obter o executionId
+    const n8nResponseBody = await n8nResponse.json();
+    const executionId = n8nResponseBody.executionId; // Ajuste este caminho se o n8n retornar uma estrutura diferente
+
+    if (!executionId) {
+      console.error('Erro: n8n não retornou um executionId.', n8nResponseBody);
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ message: 'Falha ao obter o ID de execução do n8n.' }),
+      };
+    }
+
+    // Retorna o executionId para o cliente
     return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-      body: 'Disparo do fluxo n8n iniciado com sucesso em segundo plano.',
+      statusCode: 202, // 202 Accepted indica que a requisição foi aceita para processamento
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({ executionId: executionId }),
     };
 
   } catch (error) {

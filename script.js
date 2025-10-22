@@ -206,6 +206,78 @@ function showFeedback(message, type) {
 }
 
 
+function showProgressBar() {
+    const progressContainer = document.getElementById('progressContainer');
+    if (progressContainer) {
+        progressContainer.style.display = 'block';
+    }
+}
+
+function hideProgressBar() {
+    const progressContainer = document.getElementById('progressContainer');
+    if (progressContainer) {
+        progressContainer.style.display = 'none';
+    }
+}
+
+function streamProgress(executionId, sendButton) {
+    // Conecta ao stream de progresso usando EventSource (SSE)
+    const eventSource = new EventSource(`/.netlify/functions/streamProgress?executionId=${executionId}`);
+
+    eventSource.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            console.log('Progresso recebido:', data);
+
+            // Atualiza a barra de progresso
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            if (data.percentage !== undefined) {
+                if (progressBar) {
+                    progressBar.style.width = `${data.percentage}%`;
+                    progressBar.textContent = `${data.percentage}%`;
+                }
+            }
+
+            if (data.message && progressText) {
+                progressText.textContent = data.message;
+            }
+
+            // Se o status é "completed", fecha a conexão
+            if (data.status === 'completed' || data.status === 'error') {
+                eventSource.close();
+                hideProgressBar();
+                
+                if (data.status === 'completed') {
+                    showFeedback('Mensagens enviadas com sucesso!', 'success');
+                    document.getElementById('messageText').value = '';
+                    removeImage();
+                } else {
+                    showFeedback(`Erro: ${data.message}`, 'danger');
+                }
+
+                isProcessing = false;
+                sendButton.disabled = false;
+                sendButton.textContent = 'ENVIAR';
+            }
+        } catch (error) {
+            console.error('Erro ao processar progresso:', error);
+        }
+    };
+
+    eventSource.onerror = () => {
+        console.error('Erro na conexão de streaming');
+        eventSource.close();
+        hideProgressBar();
+        showFeedback('Erro ao monitorar o progresso', 'danger');
+        
+        isProcessing = false;
+        sendButton.disabled = false;
+        sendButton.textContent = 'ENVIAR';
+    };
+}
+
 async function sendMessage() {
     if (isProcessing) return;
     if (!app.data.auth) {
@@ -247,24 +319,22 @@ async function sendMessage() {
             body: JSON.stringify(payload)
         });
 
-        let result;
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            const jsonResponse = await response.json();
-            result = jsonResponse.message || JSON.stringify(jsonResponse);
-        } else {
-            result = await response.text();
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Erro no servidor ao enviar mensagem');
         }
 
-        if (response.ok) {
-            showFeedback(result || 'Mensagens enviadas com sucesso!', 'success');
-            // Mantém a mensagem no campo de texto após o envio (não limpar)
-            // Se quiser limpar o grupo também, descomente a linha abaixo
-            // document.getElementById('groupSelect').value = '';
-            removeImage();
-        } else {
-            throw new Error(result || 'Erro no servidor ao enviar mensagem');
+        // Captura o executionId da resposta JSON
+        const jsonResponse = await response.json();
+        const executionId = jsonResponse.executionId;
+
+        if (!executionId) {
+            throw new Error('Falha ao obter o ID de execução do n8n');
         }
+
+        // Mostra a barra de progresso e conecta ao streaming
+        showProgressBar();
+        streamProgress(executionId, sendButton);
     } catch (error) {
         console.error('Erro:', error);
         showFeedback(error.message || 'Erro ao enviar mensagens.', 'danger');

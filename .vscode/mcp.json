@@ -8,7 +8,7 @@
         "DISABLE_CONSOLE_OUTPUT": "true",
         "N8N_API_URL": "https://chatbot-n8n.gmb7g5.easypanel.host",
         "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzODQyYWU3Yy0yM2E5LTRhZjAtOTI5My01ZTBmZjAxZjA1ZDEiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzYxMDkwNzE2fQ.YNqNtVfZlO-e1VSZ6_YHTAKLpBFW7dzKynTc2aQgOqg"
-      }
+      },
     }
   }
 }
