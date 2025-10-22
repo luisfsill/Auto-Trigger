@@ -217,6 +217,12 @@ async function sendMessage() {
     const group = document.getElementById('groupSelect').value;
     const sendButton = document.getElementById('sendButton');
 
+    // Validação adicional do grupo
+    if (!group || !/^Grupo \d+$/.test(group.trim())) {
+        showFeedback('Por favor, selecione um grupo válido (Grupo 1, Grupo 2, etc).', 'danger');
+        return;
+    }
+
     if (!message || !group) {
         showFeedback('Por favor, preencha a mensagem e selecione um grupo.', 'danger');
         return;
