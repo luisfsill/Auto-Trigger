@@ -1,3 +1,18 @@
+// Funções globais para o modal ENVIAR 2 temporário
+function openSend2Modal() {
+  document.getElementById('send2Modal').style.display = 'flex';
+}
+function closeSend2Modal() {
+  document.getElementById('send2Modal').style.display = 'none';
+}
+// Fecha o modal ao clicar fora do conteúdo
+window.addEventListener('click', function(event) {
+  const modal = document.getElementById('send2Modal');
+  if (event.target === modal) {
+    closeSend2Modal();
+  }
+});
+
 let isProcessing = false;
 let selectedImage = null;
 
@@ -150,12 +165,12 @@ function previewImage(event) {
     const file = event.target.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-        showFeedback('A imagem deve ter no máximo 5MB.', 'danger');
+        showFeedback('A imagem deve ter no máximo 5MB.', 'warning');
         event.target.value = '';
         return;
     }
     if (!file.type.startsWith('image/')) {
-        showFeedback('Por favor, selecione apenas arquivos de imagem.', 'danger');
+        showFeedback('Por favor, selecione apenas arquivos de imagem.', 'warning');
         event.target.value = '';
         return;
     }
@@ -182,121 +197,57 @@ document.addEventListener('DOMContentLoaded', () => {
     app.init();
 });
 
-function showFeedback(message, type) {
-    const feedbackModalLabel = document.getElementById('feedbackModalLabel');
-    const feedbackModalBody = document.getElementById('feedbackModalBody');
-    const modalHeader = document.getElementById('feedbackModal').querySelector('.modal-header');
+// Ícones SVG para feedback
+const feedbackIcons = {
+  success: `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="30" cy="30" r="30" fill="#22c55e" fill-opacity="0.15"/>
+    <path d="M20 31.5L27 38.5L41 24.5" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`,
+  error: `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="30" cy="30" r="30" fill="#ef4444" fill-opacity="0.15"/>
+    <path d="M38 22L22 38" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+    <path d="M22 22L38 38" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+  </svg>`,
+  warning: `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="30" cy="30" r="30" fill="#eab308" fill-opacity="0.15"/>
+    <path d="M30 18V34" stroke="#eab308" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="30" cy="42" r="2.5" fill="#eab308"/>
+  </svg>`
+};
 
-    // Define o título e a cor do cabeçalho do modal com base no tipo de feedback
-    if (type === 'success') {
-        feedbackModalLabel.textContent = 'Sucesso!';
-        modalHeader.classList.remove('bg-danger');
-        modalHeader.classList.add('bg-success', 'text-white');
-    } else if (type === 'danger') {
-        feedbackModalLabel.textContent = 'Erro!';
-        modalHeader.classList.remove('bg-success');
-        modalHeader.classList.add('bg-danger', 'text-white');
-    } else {
-        feedbackModalLabel.textContent = 'Aviso';
-        modalHeader.classList.remove('bg-success', 'bg-danger');
-    }
+function showFeedback(message, type = 'success') {
+  const feedbackModalLabel = document.getElementById('feedbackModalLabel');
+  const feedbackModalBody = document.getElementById('feedbackModalBody');
+  const feedbackModalIcon = document.getElementById('feedbackModalIcon');
+  const modalContent = document.getElementById('feedbackModalCustomContent');
 
-    feedbackModalBody.innerHTML = message.replace(/\n/g, '<br>');
-    feedbackModal.show();
+  // Limpa classes
+  modalContent.classList.remove('error', 'warning');
+  feedbackModalLabel.className = 'custom-modal-title';
+
+  // Define o ícone, cor e título conforme o tipo
+  if (type === 'success') {
+    feedbackModalLabel.textContent = 'Sucesso!';
+    feedbackModalIcon.innerHTML = feedbackIcons.success;
+  } else if (type === 'danger' || type === 'error') {
+    feedbackModalLabel.textContent = 'Erro!';
+    feedbackModalIcon.innerHTML = feedbackIcons.error;
+    modalContent.classList.add('error');
+    feedbackModalLabel.classList.add('error');
+  } else if (type === 'warning') {
+    feedbackModalLabel.textContent = 'Atenção';
+    feedbackModalIcon.innerHTML = feedbackIcons.warning;
+    modalContent.classList.add('warning');
+    feedbackModalLabel.classList.add('warning');
+  } else {
+    feedbackModalLabel.textContent = 'Aviso';
+    feedbackModalIcon.innerHTML = '';
+  }
+
+  feedbackModalBody.innerHTML = message.replace(/\n/g, '<br>');
+  feedbackModal.show();
 }
 
-
-function showProgressBar() {
-    const progressContainer = document.getElementById('progressContainer');
-    if (progressContainer) {
-        progressContainer.style.display = 'block';
-    }
-}
-
-function hideProgressBar() {
-    const progressContainer = document.getElementById('progressContainer');
-    if (progressContainer) {
-        progressContainer.style.display = 'none';
-    }
-}
-
-function streamProgress(executionId, sendButton) {
-    // Conecta ao stream de progresso usando EventSource (SSE)
-    const eventSourceUrl = `/.netlify/functions/streamProgress?executionId=${encodeURIComponent(executionId)}`;
-    console.log('Conectando ao stream:', eventSourceUrl);
-    
-    const eventSource = new EventSource(eventSourceUrl);
-
-    eventSource.onmessage = (event) => {
-        try {
-            const data = JSON.parse(event.data);
-            console.log('Progresso recebido:', data);
-
-            // Atualiza a barra de progresso
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-
-            if (data.percentage !== undefined) {
-                if (progressBar) {
-                    const percentage = Math.min(Math.max(data.percentage, 0), 100);
-                    progressBar.style.width = `${percentage}%`;
-                    progressBar.textContent = `${percentage}%`;
-                }
-            }
-
-            if (data.message && progressText) {
-                progressText.textContent = data.message;
-            }
-
-            // Se o status é "completed" ou "error", fecha a conexão
-            if (data.status === 'completed' || data.status === 'error') {
-                eventSource.close();
-                hideProgressBar();
-                
-                if (data.status === 'completed') {
-                    showFeedback('✅ Mensagens enviadas com sucesso!', 'success');
-                    document.getElementById('messageText').value = '';
-                    removeImage();
-                } else {
-                    showFeedback(`❌ Erro: ${data.message}`, 'danger');
-                }
-
-                isProcessing = false;
-                sendButton.disabled = false;
-                sendButton.textContent = 'ENVIAR';
-            }
-        } catch (error) {
-            console.error('Erro ao processar evento SSE:', error);
-        }
-    };
-
-    eventSource.onerror = (event) => {
-        console.error('Erro na conexão SSE:', event);
-        eventSource.close();
-        hideProgressBar();
-        
-        // Verifica se é um erro 500 ou outro erro HTTP
-        if (event.status === 500) {
-            showFeedback('⚠️ Erro no servidor ao monitorar progresso', 'danger');
-        } else {
-            showFeedback('⚠️ Conexão perdida. O envio pode continuar em background.', 'warning');
-        }
-        
-        isProcessing = false;
-        sendButton.disabled = false;
-        sendButton.textContent = 'ENVIAR';
-    };
-
-    // Timeout de segurança após 10 minutos
-    setTimeout(() => {
-        if (eventSource.readyState !== EventSource.CLOSED) {
-            console.warn('Timeout: Fechando conexão SSE após 10 minutos');
-            eventSource.close();
-            hideProgressBar();
-            showFeedback('⏱️ Timeout na conexão. Verifique o status manualmente.', 'warning');
-        }
-    }, 10 * 60 * 1000);
-}
 
 async function sendMessage() {
     if (isProcessing) return;
@@ -311,12 +262,12 @@ async function sendMessage() {
 
     // Validação adicional do grupo
     if (!group || !/^Grupo \d+$/.test(group.trim())) {
-        showFeedback('Por favor, selecione um grupo válido (Grupo 1, Grupo 2, etc).', 'danger');
+        showFeedback('Por favor, selecione um grupo válido (Grupo 1, Grupo 2, etc).', 'warning');
         return;
     }
 
     if (!message || !group) {
-        showFeedback('Por favor, preencha a mensagem e selecione um grupo.', 'danger');
+        showFeedback('Por favor, preencha a mensagem e selecione um grupo.', 'warning');
         return;
     }
 
@@ -339,47 +290,27 @@ async function sendMessage() {
             body: JSON.stringify(payload)
         });
 
-        let errorData = null;
-        
-        if (!response.ok) {
-            try {
-                // Tenta parsear como JSON primeiro
-                errorData = await response.json();
-                console.error('Erro JSON da resposta:', errorData);
-                throw new Error(errorData.message || errorData.error || `Erro ${response.status} do servidor`);
-            } catch (parseError) {
-                // Se não for JSON, trata como texto
-                const errorText = await response.text();
-                console.error('Erro de texto da resposta:', errorText);
-                throw new Error(errorText || `Erro ${response.status} ao enviar mensagem`);
-            }
+        let result;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const jsonResponse = await response.json();
+            result = jsonResponse.message || JSON.stringify(jsonResponse);
+        } else {
+            result = await response.text();
         }
 
-        // Captura o executionId da resposta JSON
-        let jsonResponse;
-        try {
-            jsonResponse = await response.json();
-        } catch (parseError) {
-            console.error('Erro ao parsear resposta:', parseError);
-            throw new Error('Resposta inválida do servidor');
+        if (response.ok) {
+            showFeedback(result || 'Mensagens enviadas com sucesso!', 'success');
+            // Mantém a mensagem no campo de texto após o envio (não limpar)
+            // Se quiser limpar o grupo também, descomente a linha abaixo
+            // document.getElementById('groupSelect').value = '';
+            removeImage();
+        } else {
+            throw new Error(result || 'Erro no servidor ao enviar mensagem');
         }
-
-        const executionId = jsonResponse.executionId;
-
-        if (!executionId) {
-            console.error('Resposta do servidor:', jsonResponse);
-            throw new Error('Falha ao obter o ID de execução do n8n. A workflow pode não ter sido iniciada.');
-        }
-
-        console.log('ExecutionId obtido:', executionId);
-
-        // Mostra a barra de progresso e conecta ao streaming
-        showProgressBar();
-        streamProgress(executionId, sendButton);
     } catch (error) {
-        console.error('Erro ao enviar mensagem:', error);
-        const errorMessage = error.message || 'Erro ao enviar mensagens.';
-        showFeedback(`⚠️ ${errorMessage}`, 'danger');
+        console.error('Erro:', error);
+        showFeedback(error.message || 'Erro ao enviar mensagens.', 'danger');
     } finally {
         isProcessing = false;
         sendButton.disabled = false;

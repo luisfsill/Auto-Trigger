@@ -1,3 +1,173 @@
+/* Modal de feedback universal estilizado */
+.custom-modal-content {
+    background: #f0fdf4;
+    border: 2.5px solid #22c55e;
+    box-shadow: 0 8px 32px rgba(34,197,94,0.18);
+    border-radius: 20px;
+    padding: 2.5rem 2rem 2rem 2rem;
+    position: relative;
+    min-width: 320px;
+    max-width: 90vw;
+    animation: modalPopGreen 0.35s cubic-bezier(.4,2,.6,1) 1;
+    text-align: center;
+}
+.custom-modal-content.error {
+    background: #fef2f2;
+    border-color: #ef4444;
+    box-shadow: 0 8px 32px rgba(239,68,68,0.18);
+    animation: modalPopRed 0.35s cubic-bezier(.4,2,.6,1) 1;
+}
+.custom-modal-content.warning {
+    background: #fefce8;
+    border-color: #eab308;
+    box-shadow: 0 8px 32px rgba(234,179,8,0.18);
+    animation: modalPopYellow 0.35s cubic-bezier(.4,2,.6,1) 1;
+}
+.custom-modal-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1.2rem;
+}
+.custom-modal-title {
+    color: #15803d;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: 0.01em;
+    text-align: center;
+}
+.custom-modal-content.error .custom-modal-title {
+    color: #b91c1c;
+}
+.custom-modal-content.warning .custom-modal-title {
+    color: #b45309;
+}
+.custom-modal-close {
+    color: #22c55e;
+    font-size: 2.2rem;
+    top: 10px;
+    right: 18px;
+    transition: color 0.2s;
+    position: absolute;
+    cursor: pointer;
+    z-index: 2;
+}
+.custom-modal-content.error .custom-modal-close {
+    color: #ef4444;
+}
+.custom-modal-content.warning .custom-modal-close {
+    color: #eab308;
+}
+.custom-modal-close:hover {
+    color: #166534;
+}
+.custom-modal-content.error .custom-modal-close:hover {
+    color: #991b1b;
+}
+.custom-modal-content.warning .custom-modal-close:hover {
+    color: #b45309;
+}
+@keyframes modalPopGreen {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes modalPopRed {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes modalPopYellow {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+/* Modal customizado ENVIAR 2 temporário - tema verde */
+.custom-modal-success-content {
+    background: #f0fdf4;
+    border: 2.5px solid #22c55e;
+    box-shadow: 0 8px 32px rgba(34,197,94,0.18);
+    border-radius: 20px;
+    padding-top: 2.5rem;
+    position: relative;
+    animation: modalPopGreen 0.35s cubic-bezier(.4,2,.6,1) 1;
+}
+.custom-modal-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1.2rem;
+}
+.custom-modal-title {
+    color: #15803d;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: 0.01em;
+    text-align: center;
+}
+.custom-modal-close {
+    color: #22c55e;
+    font-size: 2.2rem;
+    top: 10px;
+    right: 18px;
+    transition: color 0.2s;
+}
+.custom-modal-close:hover {
+    color: #166534;
+}
+@keyframes modalPopGreen {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+/* Modal customizado ENVIAR 2 temporário */
+.custom-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(44, 62, 80, 0.45);
+    justify-content: center;
+    align-items: center;
+    transition: background 0.3s;
+}
+.custom-modal-content {
+    background: #fff;
+    padding: 2.5rem 2rem 2rem 2rem;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(59,130,246,0.18);
+    text-align: center;
+    min-width: 320px;
+    max-width: 90vw;
+    position: relative;
+    animation: modalPop 0.25s cubic-bezier(.4,2,.6,1) 1;
+}
+.custom-modal-content h2 {
+    font-size: 1.3rem;
+    color: #2563eb;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+.custom-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 2rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.2s;
+    font-weight: 400;
+    z-index: 2;
+}
+.custom-modal-close:hover {
+    color: #ef4444;
+}
+@keyframes modalPop {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
 * {
